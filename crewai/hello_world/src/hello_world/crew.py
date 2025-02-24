@@ -25,13 +25,20 @@ class DeepSearchInput(BaseModel):
 
 class DeepSearchTool(BaseTool):
     name: str = "Deep Search"
-    description: str = "Perform a thorough web search returning multiple detailed results. Input should be a specific search query."
+    description: str = "Perform a thorough web search returning multiple detailed results with source URLs. Input should be a specific search query."
     args_schema: Type[BaseModel] = DeepSearchInput
 
     def _run(self, query: str) -> str:
         search = DuckDuckGoSearchAPIWrapper()
         results = search.results(query, max_results=5)
-        return "\n\n".join([f"Source: {r['link']}\nTitle: {r['title']}\nSnippet: {r['snippet']}" for r in results])
+        formatted_results = []
+        for r in results:
+            formatted_results.append(
+                f"URL: {r['link']}\n"
+                f"Title: {r['title']}\n"
+                f"Summary: {r['snippet']}\n"
+            )
+        return "\n\n".join(formatted_results)
 
 def load_config(file_path: str) -> dict:
     """Load configuration from a YAML file."""
@@ -86,23 +93,23 @@ def create_tasks(agent_map: Dict[str, Agent], research_question: str) -> List[Ta
     
     # Create source finding task
     tasks.append(Task(
-        description=f"Find relevant and reliable sources about: {research_question}\nUse your web search tools to find authoritative sources that directly address the research areas.",
+        description=f"Find relevant and reliable sources about: {research_question}\nUse your web search tools to find authoritative sources that directly address the research areas. Include full URLs for all sources.",
         agent=agent_map['search_agent'],
-        expected_output="A curated list of sources with: 1) Full citations, 2) Brief description of relevance, 3) Initial assessment of reliability"
+        expected_output="A curated list of sources with: 1) Full URLs and citations, 2) Brief description of relevance, 3) Initial assessment of reliability"
     ))
     
     # Create content extraction task
     tasks.append(Task(
-        description="Use your web search tools to verify and extract key information from the identified sources. Focus on findings, methodologies, and conclusions.",
+        description="Extract key information from the identified sources. Focus on findings, methodologies, and conclusions. Always include the source URL when citing information.",
         agent=agent_map['content_extractor'],
-        expected_output="Organized notes containing: 1) Key findings, 2) Relevant quotes or statistics, 3) Summary of main arguments"
+        expected_output="Organized notes containing: 1) Key findings with source URLs, 2) Relevant quotes or statistics with citations, 3) Summary of main arguments with references"
     ))
     
     # Create analysis task
     tasks.append(Task(
-        description=f"Using your web search tools to fact-check and validate, analyze the extracted information to answer: {research_question}\nIdentify patterns, evaluate evidence, and synthesize findings.",
+        description=f"Analyze the extracted information to answer: {research_question}\nIdentify patterns, evaluate evidence, and synthesize findings. Include full URLs for all sources cited in your analysis.",
         agent=agent_map['analyst'],
-        expected_output="Analysis report highlighting: 1) Key findings and their significance, 2) Evidence quality, 3) Patterns and trends"
+        expected_output="Analysis report highlighting: 1) Key findings and their significance with source URLs, 2) Evidence quality with citations, 3) Patterns and trends with references"
     ))
     
     return tasks
