@@ -4,62 +4,29 @@ import warnings
 
 from datetime import datetime
 
-from hello_world.crew import HelloWorld
+from crewai import Crew
+from .crew import create_crew
 
-warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
-
-# This main file is intended to be a way for you to run your
-# crew locally, so refrain from adding unnecessary logic into this file.
-# Replace with inputs you want to test with, it will automatically
-# interpolate any tasks and agents information
-
-def run():
+def main(research_question: str = "What are the latest developments in quantum computing?"):
     """
-    Run the crew.
-    """
-    inputs = {
-        'topic': 'AI LLMs',
-        'current_year': str(datetime.now().year)
-    }
+    Execute the deep research workflow with the specified research question.
     
-    try:
-        HelloWorld().crew().kickoff(inputs=inputs)
-    except Exception as e:
-        raise Exception(f"An error occurred while running the crew: {e}")
-
-
-def train():
+    Args:
+        research_question (str): The research question to investigate
+    
+    Returns:
+        str: The final research report
     """
-    Train the crew for a given number of iterations.
-    """
-    inputs = {
-        "topic": "AI LLMs"
-    }
-    try:
-        HelloWorld().crew().train(n_iterations=int(sys.argv[1]), filename=sys.argv[2], inputs=inputs)
+    # Create and execute the crew
+    crew = create_crew(research_question)
+    result = crew.kickoff()
+    
+    return result
 
-    except Exception as e:
-        raise Exception(f"An error occurred while training the crew: {e}")
-
-def replay():
-    """
-    Replay the crew execution from a specific task.
-    """
-    try:
-        HelloWorld().crew().replay(task_id=sys.argv[1])
-
-    except Exception as e:
-        raise Exception(f"An error occurred while replaying the crew: {e}")
-
-def test():
-    """
-    Test the crew execution and returns the results.
-    """
-    inputs = {
-        "topic": "AI LLMs"
-    }
-    try:
-        HelloWorld().crew().test(n_iterations=int(sys.argv[1]), openai_model_name=sys.argv[2], inputs=inputs)
-
-    except Exception as e:
-        raise Exception(f"An error occurred while testing the crew: {e}")
+if __name__ == "__main__":
+    # Get research question from command line if provided
+    research_question = sys.argv[1] if len(sys.argv) > 1 else "What are the latest developments in quantum computing?"
+    result = main(research_question)
+    print("\nFinal Research Report:")
+    print("=" * 80)
+    print(result)

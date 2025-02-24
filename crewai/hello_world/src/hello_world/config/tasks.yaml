@@ -1,17 +1,130 @@
-research_task:
-  description: >
-    Conduct a thorough research about {topic}
-    Make sure you find any interesting and relevant information given
-    the current year is {current_year}.
-  expected_output: >
-    A list with 10 bullet points of the most relevant information about {topic}
-  agent: researcher
+tasks:
+  - name: plan_research
+    agent: coordinator
+    description: |
+      Analyze the research question and create a detailed research plan.
+      Break down the question into specific areas to investigate and create a structured approach.
+      Consider what types of sources would be most valuable for this research.
+    expected_output: |
+      A structured research plan including:
+      1. Key areas to investigate
+      2. Types of sources to prioritize
+      3. Specific questions to answer
+    context: Start by understanding the research question and creating a comprehensive plan for investigation
 
-reporting_task:
-  description: >
-    Review the context you got and expand each topic into a full section for a report.
-    Make sure the report is detailed and contains any and all relevant information.
-  expected_output: >
-    A fully fledged report with the main topics, each with a full section of information.
-    Formatted as markdown without '```'
-  agent: reporting_analyst
+  - name: search_sources
+    agent: search_agent
+    description: |
+      Using the research plan, find relevant and reliable sources.
+      Focus on high-quality, authoritative sources that directly address the research areas.
+      Provide a brief evaluation of each source's relevance and reliability.
+    expected_output: |
+      A list of sources with:
+      1. Source details (title, author, date)
+      2. Brief description of relevance
+      3. Initial assessment of reliability
+    context: Use the research plan to guide your search for appropriate sources
+    depends_on:
+      - plan_research
+
+  - name: extract_content
+    agent: content_extractor
+    description: |
+      Process each identified source to extract key information.
+      Focus on information that directly addresses the research question.
+      Maintain accuracy while condensing information into digestible points.
+    expected_output: |
+      For each source:
+      1. Key findings and data points
+      2. Relevant quotes or statistics
+      3. Summary of main arguments
+    context: Extract the most relevant information from each source, maintaining accuracy
+    depends_on:
+      - search_sources
+
+  - name: analyze_information
+    agent: analyst
+    description: |
+      Review and analyze the extracted information.
+      Verify accuracy and identify patterns or relationships.
+      Evaluate the strength of evidence and identify any gaps.
+    expected_output: |
+      Analysis report including:
+      1. Validated findings
+      2. Identified patterns
+      3. Assessment of evidence quality
+      4. Noted gaps or limitations
+    context: Evaluate the accuracy and significance of the extracted information
+    depends_on:
+      - extract_content
+
+  - name: synthesize_findings
+    agent: synthesizer
+    description: |
+      Compile the analyzed information into a cohesive narrative.
+      Organize findings logically and create clear connections.
+      Ensure all key aspects of the research question are addressed.
+    expected_output: |
+      A comprehensive draft report with:
+      1. Clear structure and flow
+      2. Well-supported arguments
+      3. Integration of all key findings
+    context: Create a coherent narrative that addresses the research question
+    depends_on:
+      - analyze_information
+
+  - name: review_and_refine
+    agent: qa_editor
+    description: |
+      Review the draft report for quality and clarity.
+      Check for accuracy, consistency, and completeness.
+      Improve clarity and readability where needed.
+    expected_output: |
+      A polished final report with:
+      1. Verified accuracy
+      2. Enhanced clarity
+      3. Professional formatting
+      4. Complete citations
+    context: Ensure the report meets all quality standards and effectively communicates the findings
+    depends_on:
+      - synthesize_findings
+
+  - name: plan_research_quantum
+    agent: coordinator
+    description: >
+      Create a detailed research plan for investigating quantum computing developments.
+      Break down the topic into key areas, identify specific questions, and outline
+      the types of sources that would be most valuable.
+    expected_output: >
+      A structured research plan with key areas to investigate, specific questions
+      to answer, and types of sources to prioritize.
+
+  - name: search_sources_quantum
+    agent: search_agent
+    description: >
+      Using the research plan, find and evaluate relevant sources about quantum computing.
+      Focus on recent academic papers, industry reports, and expert opinions.
+    expected_output: >
+      A curated list of sources with brief descriptions of their relevance and reliability.
+    depends_on:
+      - plan_research_quantum
+
+  - name: extract_content_quantum
+    agent: content_extractor
+    description: >
+      Extract key information from the identified sources about quantum computing developments.
+      Focus on technical advances, practical applications, and future prospects.
+    expected_output: >
+      Organized notes containing key findings, relevant quotes, and important data points.
+    depends_on:
+      - search_sources_quantum
+
+  - name: analyze_findings_quantum
+    agent: analyst
+    description: >
+      Analyze the extracted information to identify patterns, trends, and significant developments
+      in quantum computing. Evaluate the impact and implications of these developments.
+    expected_output: >
+      Analysis report highlighting key trends, breakthroughs, and their significance.
+    depends_on:
+      - extract_content_quantum
